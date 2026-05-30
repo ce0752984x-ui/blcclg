@@ -1382,21 +1382,32 @@ function openModalData(a,typeLabel,blogId){
   var attachWrap=document.getElementById('md-attachments');
   var attachList=document.getElementById('md-attach-list');
   if(a.files&&a.files.length){
-    var ext=function(n){return n.split('.').pop().toUpperCase();};
-    var ico=function(n){var e=n.split('.').pop().toLowerCase();return e==='pdf'?'📄':e==='docx'||e==='doc'?'📝':e==='xlsx'||e==='xls'?'📊':e==='pptx'||e==='ppt'?'📑':e==='zip'||e==='rar'?'🗜️':'📎';};
-    attachList.innerHTML=a.files.map(function(f){
+    function fileIco(name){var e=(name||'').split('.').pop().toLowerCase();return e==='pdf'?'📄':e==='docx'||e==='doc'?'📝':e==='xlsx'||e==='xls'?'📊':e==='pptx'||e==='ppt'?'📑':e==='zip'||e==='rar'?'🗜️':e==='jpg'||e==='jpeg'||e==='png'||e==='gif'?'🖼️':'📎';}
+    function fileExt(name){return (name||'').split('.').pop().toUpperCase();}
+    attachList.innerHTML=a.files.map(function(f,i){
+      var name=typeof f==='string'?f:f.name;
+      var hasData=f&&f.data;
+      var isImg=hasData&&f.type&&f.type.startsWith('image/');
+      var canPreview=hasData&&(isImg||f.type==='application/pdf');
+      // Télécharger
+      var dlBtn=hasData
+        ?'<a href="'+f.data+'" download="'+name+'" style="font-size:12px;color:#1d4ed8;cursor:pointer;display:flex;align-items:center;gap:4px;text-decoration:none;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Télécharger</a>'
+        :'<span style="font-size:12px;color:#94a3b8;display:flex;align-items:center;gap:4px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Non disponible</span>';
+      // Aperçu
+      var prvBtn=canPreview
+        ?'<button onclick="previewAttachment('+i+','+JSON.stringify(name)+')" style="font-size:12px;color:#1d4ed8;cursor:pointer;background:none;border:none;display:flex;align-items:center;gap:4px;font-family:\'Inter\',sans-serif;padding:0;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Aperçu</button>'
+        :'<span style="font-size:12px;color:#94a3b8;display:flex;align-items:center;gap:4px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Aperçu</span>';
       return '<div style="display:flex;align-items:center;gap:12px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:12px 16px;margin-bottom:8px;">'
-        +'<div style="width:40px;height:40px;background:#1d4ed8;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">'+ico(f)+'</div>'
+        +'<div style="width:40px;height:40px;background:#1d4ed8;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">'+fileIco(name)+'</div>'
         +'<div style="flex:1;min-width:0;">'
-        +'<div style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+f+'</div>'
-        +'<div style="font-size:11px;color:var(--muted);margin-top:2px;">'+ext(f)+'</div>'
+        +'<div style="font-size:13px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+name+'</div>'
+        +'<div style="font-size:11px;color:var(--muted);margin-top:2px;">'+fileExt(name)+'</div>'
         +'</div>'
-        +'<div style="display:flex;gap:10px;flex-shrink:0;">'
-        +'<span style="font-size:12px;color:#1d4ed8;cursor:default;display:flex;align-items:center;gap:4px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Télécharger</span>'
-        +'<span style="font-size:12px;color:#1d4ed8;cursor:default;display:flex;align-items:center;gap:4px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>Aperçu</span>'
-        +'</div>'
+        +'<div style="display:flex;gap:14px;flex-shrink:0;align-items:center;">'+dlBtn+prvBtn+'</div>'
         +'</div>';
     }).join('');
+    // Stocker la référence aux fichiers pour la fonction aperçu
+    attachList._artFiles=a.files;
     attachWrap.style.display='block';
   }else{
     attachWrap.style.display='none';
@@ -1519,8 +1530,26 @@ function removeCover(e){
   document.getElementById('cov-ph').style.display='';document.getElementById('cov-rm').style.display='none';
   document.getElementById('p-cover').dataset.src='';try{document.getElementById('p-cover').value='';}catch(x){}
 }
-function addAttach(input){Array.from(input.files).forEach(function(f){attachFiles.push(f.name);});renderAttach();input.value='';}
-function renderAttach(){document.getElementById('att-list').innerHTML=attachFiles.map(function(f,i){return'<div class="attitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;color:var(--blue2)"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg><span>'+f+'</span><button class="attdel" onclick="attachFiles.splice('+i+',1);renderAttach()">✕</button></div>';}).join('');}
+function addAttach(input){
+  var files=Array.from(input.files);
+  var maxSize=10*1024*1024;
+  files.forEach(function(f){
+    if(f.size>maxSize){toast('Fichier trop lourd (max 10 Mo) : '+f.name,'err');return;}
+    var r=new FileReader();
+    r.onload=function(e){
+      attachFiles.push({name:f.name,type:f.type,data:e.target.result});
+      renderAttach();
+    };
+    r.readAsDataURL(f);
+  });
+  input.value='';
+}
+function renderAttach(){
+  document.getElementById('att-list').innerHTML=attachFiles.map(function(f,i){
+    var name=typeof f==='string'?f:f.name;
+    return'<div class="attitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;color:var(--blue2)"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg><span>'+name+'</span><button class="attdel" onclick="attachFiles.splice('+i+',1);renderAttach()">✕</button></div>';
+  }).join('');
+}
 
 /* ══════════════════════════════════
    SAVE CONTENT
@@ -1928,6 +1957,44 @@ function fillRubriqueSelect(){
   var sel=document.getElementById('p-rubrique');if(!sel)return;
   sel.innerHTML='<option value="">— Aucune rubrique —</option>'
     +DB.rubriques.map(function(r){return'<option value="'+r.id+'">'+r.icon+' '+r.name+'</option>';}).join('');
+}
+
+/* ══════════════════════════════════
+   APERÇU PIÈCE JOINTE
+══════════════════════════════════ */
+function previewAttachment(idx,name){
+  var list=document.getElementById('md-attach-list');
+  if(!list||!list._artFiles)return;
+  var f=list._artFiles[idx];
+  if(!f||!f.data){toast('Données non disponibles.','err');return;}
+  var isImg=f.type&&f.type.startsWith('image/');
+  var isPdf=f.type==='application/pdf';
+  // Créer ou réutiliser la modale d'aperçu
+  var modal=document.getElementById('prev-modal');
+  if(!modal){
+    modal=document.createElement('div');
+    modal.id='prev-modal';
+    modal.style.cssText='position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,.82);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;';
+    modal.onclick=function(e){if(e.target===modal)modal.remove();};
+    document.body.appendChild(modal);
+  }
+  var inner='<div style="background:#fff;border-radius:16px;max-width:900px;width:100%;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.5);">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #e2e8f0;">'
+    +'<div style="font-size:14px;font-weight:600;color:#1a1a2e;display:flex;align-items:center;gap:8px;"><span>'+(isImg?'🖼️':isPdf?'📄':'📎')+'</span><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:400px;">'+name+'</span></div>'
+    +'<div style="display:flex;gap:10px;align-items:center;">'
+    +'<a href="'+f.data+'" download="'+name+'" style="background:#1d4ed8;color:#fff;border-radius:8px;padding:7px 14px;font-size:12px;font-weight:600;text-decoration:none;display:flex;align-items:center;gap:5px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Télécharger</a>'
+    +'<button onclick="document.getElementById(\'prev-modal\').remove()" style="width:32px;height:32px;border-radius:8px;background:#f1f5f9;border:1px solid #e2e8f0;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;">✕</button>'
+    +'</div></div>'
+    +'<div style="flex:1;overflow:auto;display:flex;align-items:center;justify-content:center;padding:20px;background:#f8fafc;">';
+  if(isImg){
+    inner+='<img src="'+f.data+'" alt="'+name+'" style="max-width:100%;max-height:70vh;border-radius:8px;box-shadow:0 4px 24px rgba(0,0,0,.15);">';
+  }else if(isPdf){
+    inner+='<iframe src="'+f.data+'" style="width:100%;height:70vh;border:none;border-radius:8px;" title="'+name+'"></iframe>';
+  }else{
+    inner+='<div style="text-align:center;padding:40px;"><div style="font-size:64px;margin-bottom:16px;">📎</div><p style="color:#64748b;font-size:14px;">Aperçu non disponible pour ce type de fichier.<br>Cliquez sur Télécharger pour l\'ouvrir.</p></div>';
+  }
+  inner+='</div></div>';
+  modal.innerHTML=inner;
 }
 
 /* ══════════════════════════════════
