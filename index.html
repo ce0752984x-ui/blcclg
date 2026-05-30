@@ -4,8 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title id="doc-title">Collège Victor Duruy — Paris 75007</title>
+
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A//www.w3.org/2000/svg'%20viewBox%3D'0%200%20100%20100'%3E%3Ctext%20y%3D'.9em'%20font-size%3D'90'%3E%F0%9F%8F%9B%EF%B8%8F%3C/text%3E%3C/svg%3E">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-<link rel="icon" type="image/webp" href="blog.png">
 <style>
 :root{
   --navy:#0a1628;--blue:#1a4a8a;--blue2:#2563b0;--blue3:#3b82f6;
@@ -421,6 +422,7 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 .rub-no-rub-sep{padding:10px 16px 4px;border-bottom:1px solid #f0f2f5;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);}
 
 </style>
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'none'; frame-src blob: data:;">
 </head>
 <body>
 
@@ -905,10 +907,29 @@ body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-h
 /* ══════════════════════════════════
    DB DEFAULT
 ══════════════════════════════════ */
+/* ── HASH utilitaire (SHA-256 via SubtleCrypto) ── */
+async function sha256(str){
+  var buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+}
+/* Hash du mot de passe par défaut — généré au runtime, jamais stocké en clair */
+var _DEFAULT_PASS_HASH='';
+sha256('Tidjane2012.').then(function(h){_DEFAULT_PASS_HASH=h;});
+
+/* ── SANITIZE : échappe le HTML pour éviter les injections XSS ── */
+function esc(str){
+  return String(str||'')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;')
+    .replace(/'/g,'&#039;');
+}
+
 var DEF={
   contents:[],
   rubriques:[],
-  users:[{id:'SPR',fn:'Admin',ln:'Direction',role:'Direction',pass:'Tidjane2012.',passDefault:true}],
+  users:[{id:'SPR',fn:'Admin',ln:'Direction',role:'Direction',passHash:'',passDefault:true}],
   alerts:[],
   settings:{maxAttempts:5,lockoutDur:30,maintenance:{active:false,title:'Site en maintenance',msg:'Nous effectuons une maintenance. Merci de votre compréhension.',icon:'🔧',color:'#0a1628',allowedBlogs:[]}},
   etab:{icon:'🏛️',type:'Collège',name:'Victor Duruy',ville:'Paris',cp:'75007',arr:'7ème',academie:'Académie de Paris',region:'Île-de-France',welcome:"Bienvenue sur l'espace numérique de l'établissement. Consultez nos blogs et actualités dans le panneau à droite.",tag1:'Paris 7ème',tag2:'Île-de-France',tag3:'Académie de Paris',arrowTxt:'Explorez nos blogs',links:[{icon:'📚',label:'Pronote',url:''},{icon:'🔗',label:'ENT',url:''},{icon:'📅',label:'Agenda',url:''}]}
@@ -919,12 +940,34 @@ var cu=null,editId=null,editType='article',editBlogId=null,editBlogArtId=null,at
 /* ══════════════════════════════════
    STORAGE
 ══════════════════════════════════ */
-function save(){try{localStorage.setItem('cvd4',JSON.stringify(DB));}catch(e){}}
+function save(){
+  try{
+    /* Vérifier la taille avant sauvegarde (localStorage ~5MB) */
+    var payload=JSON.stringify(DB);
+    if(payload.length>4*1024*1024){
+      toast('⚠️ Données volumineuses (>4 Mo). Pensez à supprimer les vieilles pièces jointes.','warn');
+    }
+    localStorage.setItem('cvd4',payload);
+  }catch(e){
+    if(e.name==='QuotaExceededError'){toast('❌ Stockage local plein. Supprimez du contenu.','err');}
+  }
+}
 function load(){
   try{
     var d=localStorage.getItem('cvd4');if(!d)return;
     var p=JSON.parse(d);
-    DB.contents=p.contents||[];DB.users=p.users||DB.users;DB.alerts=p.alerts||[];
+    DB.contents=p.contents||[];
+    /* Migration : si des anciens enregistrements ont pass en clair, les hasher */
+    var rawUsers=p.users||DB.users;
+    var hashPromises=[];
+    rawUsers.forEach(function(u){
+      if(u.pass&&!u.passHash){
+        hashPromises.push(sha256(u.pass).then(function(h){u.passHash=h;delete u.pass;}));
+      }
+    });
+    Promise.all(hashPromises).then(function(){if(hashPromises.length)save();});
+    DB.users=rawUsers;
+    DB.alerts=p.alerts||[];
     DB.rubriques=p.rubriques||[];
     DB.settings=Object.assign({},DEF.settings,p.settings||{});
     DB.settings.maintenance=Object.assign({},DEF.settings.maintenance,(p.settings||{}).maintenance||{});
@@ -963,6 +1006,14 @@ var ALERT_TYPES={
    BOOT
 ══════════════════════════════════ */
 function boot(){
+  /* S'assurer que le hash du compte SPR est initialisé */
+  var spr=DB.users.find(function(u){return u.id==='SPR';});
+  if(spr&&!spr.passHash){
+    sha256('Tidjane2012.').then(function(h){
+      spr.passHash=h;
+      /* Ne pas sauvegarder le mot de passe en clair */
+    });
+  }
   var m=DB.settings.maintenance;
   if(m&&m.active){showMaintenanceScreen();}
   else{showApp();}
@@ -1089,7 +1140,17 @@ function doMaintQuickLogin(){
   var pw=document.getElementById('maint-quick-pass').value;
   var errEl=document.getElementById('maint-quick-err');
   if(!pw){errEl.textContent='Saisissez votre mot de passe.';errEl.style.display='block';return;}
-  var u=DB.users.find(function(x){return x.pass===pw&&x.role==='Direction';});
+  /* Comparaison via hash */
+  sha256(pw).then(function(pwHash){
+    var u=DB.users.find(function(x){return x.role==='Direction'&&(x.passHash===pwHash||(x.pass&&x.pass===pw));});
+    if(!u){errEl.textContent='Mot de passe incorrect.';errEl.style.display='block';document.getElementById('maint-quick-pass').value='';return;}
+    errEl.style.display='none';
+    cu=u;showApp();loginUIUpdate();
+    toast('Bienvenue '+u.fn+' ! (maintenance active)','warn');
+    goPage('settings');
+  });
+  return;
+  var u=null; // dead code — remplacé par async ci-dessus
   if(!u){errEl.textContent='Mot de passe incorrect.';errEl.style.display='block';document.getElementById('maint-quick-pass').value='';return;}
   errEl.style.display='none';
   cu=u;showApp();loginUIUpdate();
@@ -1101,7 +1162,15 @@ function doMaintLogin(){
   var uid=document.getElementById('ml-user').value.trim();
   var pw=document.getElementById('ml-pass').value;
   if(!uid||!pw){document.getElementById('ml-err').innerHTML='<div class="sec-box sec-err">Remplissez tous les champs.</div>';return;}
-  var u=DB.users.find(function(x){return x.id===uid&&x.pass===pw&&x.role==='Direction';});
+  sha256(pw).then(function(pwHash){
+    var u=DB.users.find(function(x){return x.id===uid&&x.role==='Direction'&&(x.passHash===pwHash||(x.pass&&x.pass===pw));});
+    if(!u){document.getElementById('ml-err').innerHTML='<div class="sec-box sec-err">Identifiants incorrects ou droits insuffisants.</div>';return;}
+    cu=u;closeMaintLogin();showApp();loginUIUpdate();
+    toast('Bienvenue '+u.fn+' ! (maintenance active)','warn');
+    goPage('settings');
+  });
+  return;
+  var u=null; // dead code
   if(!u){document.getElementById('ml-err').innerHTML='<div class="sec-box sec-err">Identifiants incorrects ou droits insuffisants.</div>';return;}
   cu=u;closeMaintLogin();showApp();loginUIUpdate();
   toast('Bienvenue '+u.fn+' ! (maintenance active)','warn');
@@ -1128,7 +1197,13 @@ function doLogin(){
   var maxAtt=DB.settings.maxAttempts||5;
   var lockDur=(DB.settings.lockoutDur||30)*1000;
   if(lk.u>now){var s=Math.ceil((lk.u-now)/1000);msg.innerHTML='<div class="sec-box sec-err">Compte bloqué. Réessayez dans '+s+' seconde'+(s>1?'s':'')+'.</div>';return;}
-  var u=DB.users.find(function(x){return x.id===uid&&x.pass===pw;});
+  /* Comparer avec le hash du mot de passe */
+  sha256(pw).then(function(pwHash){
+    var u=DB.users.find(function(x){return x.id===uid&&(x.passHash===pwHash||(x.pass&&x.pass===pw));});
+    _doLoginResult(u,uid,pw,msg,btn,lk,maxAtt,lockDur,now);
+  });
+}
+function _doLoginResult(u,uid,pw,msg,btn,lk,maxAtt,lockDur,now){
   if(!u){
     lk.c++;if(lk.c>=maxAtt)lk.u=now+lockDur;setLock(uid,lk);
     var rem=maxAtt-lk.c;
@@ -1142,6 +1217,7 @@ function doLogin(){
   toast('Bienvenue, '+u.fn+' !','ok');
   if(u.passDefault){setTimeout(function(){toast('⚠️ Changez votre mot de passe par défaut.','warn');},3500);}
 }
+/* Fermeture de doLogin (qui est maintenant async) */
 
 function loginUIUpdate(){
   if(cu){
@@ -1245,7 +1321,7 @@ function renderPubSidebar(){
     var dr=b.statut==='Brouillon'?'<span style="font-size:10px;background:#fef9c3;color:#854d0e;padding:2px 6px;border-radius:6px;margin-left:4px">Brouillon</span>':'';
     return '<div class="blog-entry" style="padding-left:28px" onclick="openBlogReader('+b.id+')">'
       +cov+'<div class="blog-entry-tag">\u270d\ufe0f Blog</div>'
-      +'<h4>'+b.title+dr+'</h4>'
+      +'<h4>'+esc(b.title)+dr+'</h4>'
       +(b.resume?'<div class="blog-entry-res">'+b.resume+'</div>':'')
       +'<div class="blog-entry-meta">'+fmtD(b.modified||b.created)+' \u00b7 '+cnt+' article'+(cnt>1?'s':'')+'</div>'
       +'</div>';
@@ -1257,7 +1333,7 @@ function renderPubSidebar(){
     var dr=b.statut==='Brouillon'?'<span style="font-size:10px;background:#fef9c3;color:#854d0e;padding:2px 6px;border-radius:6px;margin-left:4px">Brouillon</span>':'';
     return '<div class="blog-entry" onclick="openBlogReader('+b.id+')">'
       +cov+'<div class="blog-entry-tag">\u270d\ufe0f Blog</div>'
-      +'<h4>'+b.title+dr+'</h4>'
+      +'<h4>'+esc(b.title)+dr+'</h4>'
       +(b.resume?'<div class="blog-entry-res">'+b.resume+'</div>':'')
       +'<div class="blog-entry-meta">'+fmtD(b.modified||b.created)+' \u00b7 '+cnt+' article'+(cnt>1?'s':'')+'</div>'
       +'</div>';
@@ -1332,7 +1408,7 @@ function openBlogReader(blogId){
     +(b.coverSrc?'<div style="position:absolute;inset:0;overflow:hidden;border-radius:16px;opacity:.2;z-index:0"><img src="'+b.coverSrc+'" style="width:100%;height:100%;object-fit:cover"></div>':'')
     +'<div style="position:relative">'
     +'<div class="brh-tag">✍️ Blog</div>'
-    +'<h2>'+b.title+'</h2>'
+    +'<h2>'+esc(b.title)+'</h2>'
     +(b.resume?'<p style="font-size:14px;color:rgba(255,255,255,.75);margin-bottom:12px">'+b.resume+'</p>':'')
     +'<div class="brh-meta"><span>Par '+b.author+'</span><span>'+fmtD(b.created)+'</span>'+(b.cat?'<span>'+b.cat+'</span>':'')+'</div>'
     +(isDir()?'<div class="brh-actions"><button class="brh-btn" onclick="openPanel('+b.id+')">✏️ Modifier ce blog</button><button class="brh-btn" onclick="openBlogArticlePanel()">+ Ajouter un article</button></div>':'')
@@ -1349,7 +1425,7 @@ function blogArtCard(a,blogId){
   var dr=a.statut==='Brouillon'?'<span style="font-size:10px;background:#fef9c3;color:#854d0e;padding:2px 6px;border-radius:6px;margin-left:4px">Brouillon</span>':'';
   return '<div class="acard" onclick="openBlogArtModal('+blogId+',\''+a.id+'\')">'
     +'<div class="acard-cov">'+cov+(a.coverSrc?'<div class="acard-ovl"></div>':'')+'</div>'
-    +'<div class="acard-body"><div class="acard-tag">📄 Article</div><h3>'+a.title+dr+'</h3>'+(a.resume?'<p>'+a.resume+'</p>':'')+'</div>'
+    +'<div class="acard-body"><div class="acard-tag">📄 Article</div><h3>'+esc(a.title)+dr+'</h3>'+(a.resume?'<p>'+a.resume+'</p>':'')+'</div>'
     +'<div class="acard-foot"><span style="font-size:11px;color:var(--muted)">'+fmtD(a.created)+'</span>'
     +(isDir()?'<button class="bsm bsm-e" style="font-size:11px;padding:4px 9px" onclick="event.stopPropagation();openBlogArticlePanel(\''+a.id+'\')">Modifier</button>':'')
     +'</div></div>';
@@ -1370,14 +1446,14 @@ function openModal(id){
 }
 function openModalData(a,typeLabel,blogId){
   document.getElementById('md-type').textContent=typeLabel;
-  document.getElementById('md-title').textContent=a.title;
+  document.getElementById('md-title').textContent=a.title; /* textContent = sûr */
   document.getElementById('md-author').textContent=a.author||'—';
   document.getElementById('md-created').textContent=fmtDT(a.created);
   document.getElementById('md-cat').textContent=a.cat||'Non catégorisé';
   var cw=document.getElementById('modal-cov-wrap');
   cw.innerHTML=a.coverSrc?'<div class="modal-cover"><img src="'+a.coverSrc+'" alt=""></div>':'';
   document.getElementById('md-body').innerHTML=a.content||'<p style="color:var(--muted)">Aucun contenu.</p>';
-  document.getElementById('md-fmeta').innerHTML='Créé le '+fmtDT(a.created)+(a.tags?'<br>Tags : '+a.tags:'');
+  document.getElementById('md-fmeta').innerHTML='Créé le '+esc(fmtDT(a.created))+(a.tags?'<br>Tags : '+esc(a.tags):'');
   // Pièces jointes
   var attachWrap=document.getElementById('md-attachments');
   var attachList=document.getElementById('md-attach-list');
@@ -1385,7 +1461,7 @@ function openModalData(a,typeLabel,blogId){
     function fileIco(name){var e=(name||'').split('.').pop().toLowerCase();return e==='pdf'?'📄':e==='docx'||e==='doc'?'📝':e==='xlsx'||e==='xls'?'📊':e==='pptx'||e==='ppt'?'📑':e==='zip'||e==='rar'?'🗜️':e==='jpg'||e==='jpeg'||e==='png'||e==='gif'?'🖼️':'📎';}
     function fileExt(name){return (name||'').split('.').pop().toUpperCase();}
     attachList.innerHTML=a.files.map(function(f,i){
-      var name=typeof f==='string'?f:f.name;
+      var name=esc(typeof f==='string'?f:f.name);
       var hasData=f&&f.data;
       var isImg=hasData&&f.type&&f.type.startsWith('image/');
       var canPreview=hasData&&(isImg||f.type==='application/pdf');
@@ -1546,7 +1622,7 @@ function addAttach(input){
 }
 function renderAttach(){
   document.getElementById('att-list').innerHTML=attachFiles.map(function(f,i){
-    var name=typeof f==='string'?f:f.name;
+    var name=esc(typeof f==='string'?f:f.name);
     return'<div class="attitem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:13px;height:13px;color:var(--blue2)"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg><span>'+name+'</span><button class="attdel" onclick="attachFiles.splice('+i+',1);renderAttach()">✕</button></div>';
   }).join('');
 }
@@ -1614,7 +1690,7 @@ function renderAdmin(){
     var img=a.coverSrc?'<img src="'+a.coverSrc+'" alt="">':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:18px;height:18px;color:#9ab5d4"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>';
     var tb=a.type==='blog'?'<span class="tbadge tbadge-b">Blog</span>':'<span class="tbadge tbadge-a">Article</span>';
     var sub=a.type==='blog'?((a.blogArticles||[]).length+' article(s)'):(a.cat||'');
-    return '<div class="arm"><div class="arm-th">'+img+'</div><div class="arm-body"><h4>'+a.title+' '+tb+'</h4><p>'+fmtDT(a.modified||a.created)+(sub?' · '+sub:'')+'</p></div><span class="bst '+(a.statut==='En ligne'?'b-on':'b-dr')+'" style="margin-right:8px;flex-shrink:0">'+a.statut+'</span><div class="arm-acts"><button class="bsm bsm-e" onclick="event.stopPropagation();openPanel('+a.id+')">Modifier</button><button class="bsm bsm-d" onclick="event.stopPropagation();delContent('+a.id+')">✕</button></div></div>';
+    return '<div class="arm"><div class="arm-th">'+img+'</div><div class="arm-body"><h4>'+esc(a.title)+' '+tb+'</h4><p>'+esc(fmtDT(a.modified||a.created))+(sub?' · '+esc(sub):'')+'</p></div><span class="bst '+(a.statut==='En ligne'?'b-on':'b-dr')+'" style="margin-right:8px;flex-shrink:0">'+a.statut+'</span><div class="arm-acts"><button class="bsm bsm-e" onclick="event.stopPropagation();openPanel('+a.id+')">Modifier</button><button class="bsm bsm-d" onclick="event.stopPropagation();delContent('+a.id+')">✕</button></div></div>';
   }).join('');
 }
 
@@ -1750,8 +1826,12 @@ function saveUser(){
   var role=document.querySelector('input[name="u-role"]:checked').value;
   if(!fn||!ln||!uid||!pw){toast('Tous les champs sont obligatoires.','err');return;}
   if(DB.users.find(function(u){return u.id===uid;})){toast('Identifiant déjà utilisé.','err');return;}
-  DB.users.push({id:uid,fn:fn,ln:ln,role:role,pass:pw,passDefault:true});
-  save();toast('Utilisateur @'+uid+' créé !','ok');closeUserPanel();renderUsers();
+  sha256(pw).then(function(h){
+    DB.users.push({id:uid,fn:fn,ln:ln,role:role,passHash:h,passDefault:true});
+    save();toast('Utilisateur @'+uid+' créé !','ok');closeUserPanel();renderUsers();
+  });
+  return; // async ci-dessus
+  /* save/toast déplacé dans le .then() ci-dessus */
 }
 function delUser(id){
   if(id==='SPR'){toast('Impossible de supprimer le compte principal.','err');return;}
@@ -1762,7 +1842,7 @@ function delUser(id){
 function renderUsers(){
   document.getElementById('users-grid').innerHTML=DB.users.map(function(u){
     var rc=u.role==='Direction'?'role-dir':'role-usr';
-    return '<div class="ucard"><div class="uca">'+(u.fn[0]+(u.ln[0]||'')).toUpperCase()+'</div><div class="uc-name">'+u.fn+' '+u.ln+'</div><div class="uc-id">@'+u.id+'</div><span class="uc-role '+rc+'">'+u.role+'</span><div>'+(u.passDefault?'<span class="ps-default">⚠️ Mot de passe par défaut</span>':'<span class="ps-ok">✅ Mot de passe modifié</span>')+'</div><div class="uc-acts">'+(u.id!=='SPR'?'<button class="bsm bsm-d" onclick="delUser(\''+u.id+'\')">Supprimer</button>':'<span style="font-size:11px;color:var(--muted)">Compte principal</span>')+'</div></div>';
+    return '<div class="ucard"><div class="uca">'+(u.fn[0]+(u.ln[0]||'')).toUpperCase()+'</div><div class="uc-name">'+esc(u.fn)+' '+esc(u.ln)+'</div><div class="uc-id">@'+esc(u.id)+'</div><span class="uc-role '+rc+'">'+u.role+'</span><div>'+(u.passDefault?'<span class="ps-default">⚠️ Mot de passe par défaut</span>':'<span class="ps-ok">✅ Mot de passe modifié</span>')+'</div><div class="uc-acts">'+(u.id!=='SPR'?'<button class="bsm bsm-d" onclick="delUser(\''+u.id+'\')">Supprimer</button>':'<span style="font-size:11px;color:var(--muted)">Compte principal</span>')+'</div></div>';
   }).join('');
 }
 
@@ -1899,7 +1979,9 @@ function changePass(){
   if(np!==np2){toast('Les mots de passe ne correspondent pas.','err');return;}
   if(np.length<6){toast('Mot de passe trop court (6 car. min).','err');return;}
   var u=DB.users.find(function(x){return x.id===cu.id;});
-  if(u){u.pass=np;u.passDefault=false;}
+  if(u){
+    sha256(np).then(function(h){u.passHash=h;delete u.pass;u.passDefault=false;save();});
+  }
   save();document.getElementById('set-newpass').value='';document.getElementById('set-newpass2').value='';
   document.getElementById('pass-strength-fill').style.width='0';
   toast('Mot de passe changé !','ok');
@@ -1978,6 +2060,7 @@ function previewAttachment(idx,name){
     modal.onclick=function(e){if(e.target===modal)modal.remove();};
     document.body.appendChild(modal);
   }
+  name=esc(name);
   var inner='<div style="background:#fff;border-radius:16px;max-width:900px;width:100%;max-height:90vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.5);">'
     +'<div style="display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid #e2e8f0;">'
     +'<div style="font-size:14px;font-weight:600;color:#1a1a2e;display:flex;align-items:center;gap:8px;"><span>'+(isImg?'🖼️':isPdf?'📄':'📎')+'</span><span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:400px;">'+name+'</span></div>'
