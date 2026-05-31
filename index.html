@@ -1154,43 +1154,74 @@ var DB=JSON.parse(JSON.stringify(DEF));
 var cu=null,editId=null,editType='article',editBlogId=null,editBlogArtId=null,attachFiles=[],adminFilter='all',editAlertId=null,selectedAlertType='warning',_maintColor='#0a1628',editRubId=null;
 
 /* ══════════════════════════════════
+   JSONBIN CONFIG
+══════════════════════════════════ */
+var JBIN_KEY='$2a$10$D1wsyUz4TXyQlXzAVrWT.uccjpweLgAiBENzX0.U150ENUI1tzIqu';
+var JBIN_ID='6a1c2f79ddf5aa59f77bae9d';
+var JBIN_URL='https://api.jsonbin.io/v3/b/'+JBIN_ID;
+var _saveTimer=null;
+
+/* ══════════════════════════════════
    STORAGE
 ══════════════════════════════════ */
 function save(){
-  try{
-    /* Vérifier la taille avant sauvegarde (localStorage ~5MB) */
-    var payload=JSON.stringify(DB);
-    if(payload.length>4*1024*1024){
-      toast('⚠️ Données volumineuses (>4 Mo). Pensez à supprimer les vieilles pièces jointes.','warn');
-    }
-    localStorage.setItem('cvd4',payload);
-  }catch(e){
-    if(e.name==='QuotaExceededError'){toast('❌ Stockage local plein. Supprimez du contenu.','err');}
-  }
-}
-function load(){
-  try{
-    var d=localStorage.getItem('cvd4');if(!d)return;
-    var p=JSON.parse(d);
-    DB.contents=p.contents||[];
-    /* Migration : si des anciens enregistrements ont pass en clair, les hasher */
-    var rawUsers=p.users||DB.users;
-    var hashPromises=[];
-    rawUsers.forEach(function(u){
-      if(u.pass&&!u.passHash){
-        hashPromises.push(sha256(u.pass).then(function(h){u.passHash=h;delete u.pass;}));
-      }
+  /* Sauvegarde locale immédiate */
+  try{localStorage.setItem('cvd4',JSON.stringify(DB));}catch(e){}
+  /* Sync JSONBin avec debounce 800ms pour éviter trop d'appels */
+  clearTimeout(_saveTimer);
+  _saveTimer=setTimeout(function(){
+    fetch(JBIN_URL,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json','X-Master-Key':JBIN_KEY,'X-Bin-Versioning':'false'},
+      body:JSON.stringify(DB)
+    }).then(function(r){
+      if(!r.ok)toast('⚠️ Sync cloud échouée ('+r.status+')','warn');
+    }).catch(function(){
+      toast('⚠️ Pas de connexion — données sauvées localement uniquement.','warn');
     });
-    Promise.all(hashPromises).then(function(){if(hashPromises.length)save();});
-    DB.users=rawUsers;
-    DB.alerts=p.alerts||[];
-    DB.rubriques=p.rubriques||[];
-    DB.settings=Object.assign({},DEF.settings,p.settings||{});
-    DB.settings.maintenance=Object.assign({},DEF.settings.maintenance,(p.settings||{}).maintenance||{});
-    DB.etab=Object.assign({},DEF.etab,p.etab||{});
-    DB.etab.links=p.etab&&p.etab.links||DEF.etab.links;
-    if(!DB.users.find(function(u){return u.id==='SPR';}))DB.users.unshift(DEF.users[0]);
+  },800);
+}
+
+function applyDB(p){
+  DB.contents=p.contents||[];
+  var rawUsers=p.users||DB.users;
+  var hashPromises=[];
+  rawUsers.forEach(function(u){
+    if(u.pass&&!u.passHash){
+      hashPromises.push(sha256(u.pass).then(function(h){u.passHash=h;delete u.pass;}));
+    }
+  });
+  Promise.all(hashPromises).then(function(){if(hashPromises.length)save();});
+  DB.users=rawUsers;
+  DB.alerts=p.alerts||[];
+  DB.rubriques=p.rubriques||[];
+  DB.settings=Object.assign({},DEF.settings,p.settings||{});
+  DB.settings.maintenance=Object.assign({},DEF.settings.maintenance,(p.settings||{}).maintenance||{});
+  DB.etab=Object.assign({},DEF.etab,p.etab||{});
+  DB.etab.links=p.etab&&p.etab.links||DEF.etab.links;
+  if(!DB.users.find(function(u){return u.id==='SPR';}))DB.users.unshift(DEF.users[0]);
+}
+
+function load(){
+  /* 1. Charger le local d'abord pour affichage rapide */
+  try{
+    var d=localStorage.getItem('cvd4');
+    if(d)applyDB(JSON.parse(d));
   }catch(e){}
+  /* 2. Puis récupérer la version cloud (source de vérité) */
+  fetch(JBIN_URL+'/latest',{
+    headers:{'X-Master-Key':JBIN_KEY,'X-Bin-Meta':'false'}
+  }).then(function(r){return r.json();}).then(function(data){
+    var p=data.record||data;
+    if(p&&typeof p==='object'&&!p.message){
+      applyDB(p);
+      try{localStorage.setItem('cvd4',JSON.stringify(DB));}catch(e){}
+      /* Rafraîchir l'UI si déjà rendue */
+      if(typeof applyEtab==='function'){applyEtab();renderPubSidebar();renderPubLinks();updateAlertsBadge();}
+    }
+  }).catch(function(){
+    /* Pas de réseau : on reste sur le localStorage */
+  });
 }
 load();
 
