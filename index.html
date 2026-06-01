@@ -569,6 +569,58 @@ body{font-family:Inter,sans-serif;background:var(--bg);color:var(--text);min-hei
 .rub-folder.open .rub-folder-ico{transform:scale(1.1);}
 .rub-no-rub-sep{padding:10px 16px 4px;border-bottom:1px solid #f0f2f5;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);}
 
+
+/* ══════════════════════════════════
+   BOTTOM NAV MOBILE
+══════════════════════════════════ */
+#mob-nav{display:none;position:fixed;bottom:0;left:0;right:0;height:60px;background:var(--mob-nav-color,#0a1628);z-index:1000;align-items:stretch;box-shadow:0 -2px 12px rgba(0,0,0,.15);}
+.mob-nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:none;border:none;cursor:pointer;color:rgba(255,255,255,.65);font-size:10px;font-family:inherit;padding:6px 4px;transition:color .15s;}
+.mob-nav-btn svg{width:20px;height:20px;}
+.mob-nav-btn.active{color:#fff;}
+.mob-nav-btn:active{opacity:.7;}
+@media(max-width:900px){
+  #mob-nav{display:flex!important;}
+  .main{padding-bottom:68px!important;}
+  #blog-reader{padding-bottom:80px!important;}
+  #view-home{padding-bottom:68px;}
+}
+
+/* ══════════════════════════════════
+   PAGE INSCRIPTION
+══════════════════════════════════ */
+#page-register{display:none;}
+#page-register.active{display:block;}
+.register-wrap{display:flex;align-items:center;justify-content:center;min-height:calc(100vh - 130px);padding:20px;}
+.register-card{background:#fff;border-radius:20px;padding:36px 40px;width:100%;max-width:440px;box-shadow:0 8px 40px rgba(0,0,0,.08);}
+.register-card h2{font-size:20px;font-weight:700;margin-bottom:4px;color:var(--navy);}
+.register-card .reg-sub{font-size:13px;color:var(--muted);margin-bottom:24px;}
+.reg-uid-preview{background:#f0f4ff;border:1px solid #c7d7f9;border-radius:8px;padding:8px 12px;font-size:13px;color:var(--blue2);font-weight:600;margin-top:4px;min-height:32px;}
+.reg-color-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:4px;}
+.reg-color-swatch{width:32px;height:32px;border-radius:8px;cursor:pointer;border:3px solid transparent;transition:border-color .15s;}
+.reg-color-swatch.selected{border-color:var(--navy);}
+.reg-link{background:none;border:none;color:var(--blue2);font-size:13px;cursor:pointer;text-decoration:underline;padding:0;}
+
+/* ══════════════════════════════════
+   PAGE PROFIL
+══════════════════════════════════ */
+#page-profile{display:none;}
+#page-profile.active{display:block;}
+.profile-wrap{max-width:520px;margin:0 auto;padding:24px 16px;}
+.profile-card{background:#fff;border-radius:16px;padding:28px;box-shadow:0 4px 20px rgba(0,0,0,.06);margin-bottom:16px;}
+.profile-card h3{font-size:15px;font-weight:700;margin-bottom:16px;color:var(--navy);border-bottom:1px solid var(--border);padding-bottom:10px;}
+.profile-av-big{width:64px;height:64px;border-radius:50%;background:var(--blue2);color:#fff;font-size:24px;font-weight:700;display:flex;align-items:center;justify-content:center;margin:0 auto 12px;}
+.profile-name{text-align:center;font-size:18px;font-weight:700;color:var(--navy);}
+.profile-id{text-align:center;font-size:13px;color:var(--muted);margin-bottom:4px;}
+.profile-role{text-align:center;margin-bottom:20px;}
+
+/* ══════════════════════════════════
+   MODALE CHANGEMENT MDP
+══════════════════════════════════ */
+#chgpass-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:8000;align-items:center;justify-content:center;padding:20px;}
+#chgpass-modal.open{display:flex;}
+.chgpass-box{background:#fff;border-radius:20px;padding:32px 28px;width:100%;max-width:400px;box-shadow:0 8px 40px rgba(0,0,0,.15);}
+.chgpass-box h3{font-size:17px;font-weight:700;margin-bottom:6px;color:var(--navy);}
+.chgpass-box p{font-size:13px;color:var(--muted);margin-bottom:20px;}
 </style>
 <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://api.jsonbin.io; frame-src blob: data:;">
 </head>
@@ -699,8 +751,124 @@ body{font-family:Inter,sans-serif;background:var(--bg);color:var(--text);min-hei
         </div>
         <div id="login-msg"></div>
         <button class="btn-prim-full" id="login-btn" onclick="doLogin()">Se connecter</button>
+        <p style="text-align:center;margin-top:14px;font-size:13px;color:var(--muted)">Pas encore de compte ? <button class="reg-link" onclick="goPage('register')">Créer un compte gratuitement</button></p>
       </div>
     </div>
+  </div>
+
+  <!-- INSCRIPTION -->
+  <div class="page" id="page-register">
+    <div class="register-wrap">
+      <div class="register-card">
+        <div class="login-icon" id="reg-ico">🏛️</div>
+        <h2>Créer un compte</h2>
+        <p class="reg-sub">Rejoignez l'espace numérique de l'établissement.</p>
+        <div class="ff"><label>Prénom <span class="req">*</span></label><input class="pfi" type="text" id="reg-fn" placeholder="Prénom" oninput="genRegUid()"></div>
+        <div class="ff"><label>Nom <span class="req">*</span></label><input class="pfi" type="text" id="reg-ln" placeholder="Nom" oninput="genRegUid()"></div>
+        <div class="ff"><label>Identifiant généré automatiquement</label><div class="reg-uid-preview" id="reg-uid-preview">—</div></div>
+        <div class="ff"><label>Mot de passe <span class="req">*</span></label>
+          <div class="iw"><input class="pfi" type="password" id="reg-pass" placeholder="Choisissez un mot de passe">
+          <button class="eyebtn" onclick="togglePass('reg-pass',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
+        </div>
+        <div class="ff"><label>Couleur de votre barre de navigation</label>
+          <div class="reg-color-row" id="reg-color-row">
+            <div class="reg-color-swatch selected" style="background:#0a1628" data-color="#0a1628" onclick="selectRegColor(this)"></div>
+            <div class="reg-color-swatch" style="background:#1d4ed8" data-color="#1d4ed8" onclick="selectRegColor(this)"></div>
+            <div class="reg-color-swatch" style="background:#7c3aed" data-color="#7c3aed" onclick="selectRegColor(this)"></div>
+            <div class="reg-color-swatch" style="background:#be123c" data-color="#be123c" onclick="selectRegColor(this)"></div>
+            <div class="reg-color-swatch" style="background:#15803d" data-color="#15803d" onclick="selectRegColor(this)"></div>
+            <div class="reg-color-swatch" style="background:#b45309" data-color="#b45309" onclick="selectRegColor(this)"></div>
+            <div class="reg-color-swatch" style="background:#0f766e" data-color="#0f766e" onclick="selectRegColor(this)"></div>
+            <input type="color" id="reg-color-custom" value="#0a1628" style="width:32px;height:32px;border-radius:8px;border:none;cursor:pointer;padding:0" title="Couleur personnalisée" oninput="selectRegColorCustom(this)">
+          </div>
+        </div>
+        <div id="reg-msg"></div>
+        <button class="btn-prim-full" onclick="doRegister()" style="margin-top:16px">Créer mon compte</button>
+        <p style="text-align:center;margin-top:12px;font-size:13px;color:var(--muted)">Déjà un compte ? <button class="reg-link" onclick="goPage('login')">Se connecter</button></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFIL -->
+  <div class="page" id="page-profile">
+    <div class="profile-wrap">
+      <div class="profile-card">
+        <div class="profile-av-big" id="prof-av">?</div>
+        <div class="profile-name" id="prof-name"></div>
+        <div class="profile-id" id="prof-id"></div>
+        <div class="profile-role" id="prof-role"></div>
+        <div class="pfs"><label class="pfl">Couleur de ma barre de navigation</label>
+          <div class="reg-color-row" id="prof-color-row">
+            <div class="reg-color-swatch selected" style="background:#0a1628" data-color="#0a1628" onclick="selectProfColor(this)"></div>
+            <div class="reg-color-swatch" style="background:#1d4ed8" data-color="#1d4ed8" onclick="selectProfColor(this)"></div>
+            <div class="reg-color-swatch" style="background:#7c3aed" data-color="#7c3aed" onclick="selectProfColor(this)"></div>
+            <div class="reg-color-swatch" style="background:#be123c" data-color="#be123c" onclick="selectProfColor(this)"></div>
+            <div class="reg-color-swatch" style="background:#15803d" data-color="#15803d" onclick="selectProfColor(this)"></div>
+            <div class="reg-color-swatch" style="background:#b45309" data-color="#b45309" onclick="selectProfColor(this)"></div>
+            <div class="reg-color-swatch" style="background:#0f766e" data-color="#0f766e" onclick="selectProfColor(this)"></div>
+            <input type="color" id="prof-color-custom" value="#0a1628" style="width:32px;height:32px;border-radius:8px;border:none;cursor:pointer;padding:0" title="Couleur personnalisée" oninput="selectProfColorCustom(this)">
+          </div>
+          <button class="bprim" style="margin-top:12px;width:100%" onclick="saveProfColor()">💾 Enregistrer la couleur</button>
+        </div>
+      </div>
+      <div class="profile-card">
+        <h3>🔒 Changer mon mot de passe</h3>
+        <div class="ff"><label>Mot de passe actuel</label>
+          <div class="iw"><input class="pfi" type="password" id="prof-old-pass" placeholder="••••••••">
+          <button class="eyebtn" onclick="togglePass('prof-old-pass',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
+        </div>
+        <div class="ff"><label>Nouveau mot de passe</label>
+          <div class="iw"><input class="pfi" type="password" id="prof-new-pass" placeholder="••••••••">
+          <button class="eyebtn" onclick="togglePass('prof-new-pass',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
+        </div>
+        <div class="ff"><label>Confirmer le nouveau mot de passe</label>
+          <div class="iw"><input class="pfi" type="password" id="prof-conf-pass" placeholder="••••••••">
+          <button class="eyebtn" onclick="togglePass('prof-conf-pass',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
+        </div>
+        <div id="prof-pass-msg"></div>
+        <button class="bprim" style="width:100%;margin-top:8px" onclick="saveProfilePass()">Changer le mot de passe</button>
+      </div>
+      <div style="text-align:center;margin-top:8px">
+        <button class="bsec" onclick="doLogout()" style="width:100%">Se déconnecter</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODALE PREMIER MDP -->
+  <div id="chgpass-modal">
+    <div class="chgpass-box">
+      <h3>🔒 Changez votre mot de passe</h3>
+      <p>Pour sécuriser votre compte, choisissez un nouveau mot de passe personnel.</p>
+      <div class="ff"><label>Nouveau mot de passe <span class="req">*</span></label>
+        <div class="iw"><input class="pfi" type="password" id="chg-new" placeholder="••••••••">
+        <button class="eyebtn" onclick="togglePass('chg-new',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
+      </div>
+      <div class="ff"><label>Confirmer <span class="req">*</span></label>
+        <div class="iw"><input class="pfi" type="password" id="chg-conf" placeholder="••••••••">
+        <button class="eyebtn" onclick="togglePass('chg-conf',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
+      </div>
+      <div id="chg-msg"></div>
+      <button class="btn-prim-full" style="margin-top:12px" onclick="doChgPass()">Valider</button>
+    </div>
+  </div>
+
+  <!-- PAGE BLOGS MOBILE -->
+  <div class="page" id="page-blogs">
+    <div class="page-head" style="padding:16px;">
+      <h2>📝 Blogs</h2>
+    </div>
+    <div style="padding:0 16px 16px;">
+      <div class="pub-srch" style="margin-bottom:12px;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg><input type="text" id="mob-blogs-srch" placeholder="Rechercher un blog…" oninput="renderMobBlogs()"></div>
+      <div id="mob-blogs-list"></div>
+    </div>
+  </div>
+
+  <!-- PAGE ALERTES PUBLIQUE MOBILE -->
+  <div class="page" id="page-alertes-pub">
+    <div class="page-head" style="padding:16px;">
+      <h2>🔔 Alertes</h2>
+    </div>
+    <div style="padding:0 16px 16px;" id="mob-alertes-pub-list"></div>
   </div>
 
   <!-- CONTENUS -->
@@ -1398,10 +1566,18 @@ function loginUIUpdate(){
     document.getElementById('ui-urole').textContent=cu.role;
     document.getElementById('btn-conn').style.display='none';
     if(isDir())document.getElementById('admin-sidebar').classList.remove('hidden');
+    /* Mob nav : bouton profil */
+    var lbl=document.getElementById('mn-profile-lbl');if(lbl)lbl.textContent=cu.fn;
+    loadNavColor();
+    if(cu.passDefault){
+      setTimeout(function(){document.getElementById('chgpass-modal').classList.add('open');},800);
+    }
   }else{
     document.getElementById('ui-user').style.display='none';
     document.getElementById('btn-conn').style.display='';
     document.getElementById('admin-sidebar').classList.add('hidden');
+    var lbl2=document.getElementById('mn-profile-lbl');if(lbl2)lbl2.textContent='Profil';
+    applyNavColor('#0a1628');
   }
   renderPubSidebar();
 }
@@ -1420,21 +1596,47 @@ function doLogout(){
 function hideAll(){
   document.getElementById('view-home').style.display='none';
   document.getElementById('blog-reader').style.display='none';
-  ['login','contenus','rubriques','alertes','users','etab','settings'].forEach(function(p){
-    document.getElementById('page-'+p).classList.remove('active');
+  ['login','contenus','rubriques','alertes','users','etab','settings','register','profile','blogs','alertes-pub'].forEach(function(p){
+    var el=document.getElementById('page-'+p);if(el)el.classList.remove('active');
   });
   document.querySelectorAll('.admin-sidebar .sl').forEach(function(el){el.classList.remove('active');});
+  document.querySelectorAll('.mob-nav-btn').forEach(function(b){b.classList.remove('active');});
 }
 
 function showHome(){
   hideAll();
   document.getElementById('view-home').style.display='block';
   renderHomeAlerts();
+  var b=document.getElementById('mn-home');if(b)b.classList.add('active');
 }
 
 function goPage(name){
   var adminPages=['contenus','rubriques','alertes','users','etab','settings'];
   if(adminPages.includes(name)&&!isDir()){toast('Accès réservé à la Direction.','err');return;}
+  /* Pages publiques spéciales */
+  if(name==='register'){hideAll();document.getElementById('page-register').classList.add('active');return;}
+  if(name==='profile'){
+    if(!cu){goPage('login');return;}
+    hideAll();
+    renderProfile();
+    document.getElementById('page-profile').classList.add('active');
+    var b=document.getElementById('mn-profile');if(b)b.classList.add('active');
+    return;
+  }
+  if(name==='blogs'){
+    hideAll();
+    document.getElementById('page-blogs').classList.add('active');
+    var b2=document.getElementById('mn-blogs');if(b2)b2.classList.add('active');
+    renderMobBlogs();
+    return;
+  }
+  if(name==='alertes-pub'){
+    hideAll();
+    document.getElementById('page-alertes-pub').classList.add('active');
+    var b3=document.getElementById('mn-alertes');if(b3)b3.classList.add('active');
+    renderMobAlertesPub();
+    return;
+  }
   hideAll();
   document.getElementById('page-'+name).classList.add('active');
   var sl=document.getElementById('sl-'+name);if(sl)sl.classList.add('active');
@@ -2300,41 +2502,213 @@ function isMobile(){return window.innerWidth<=900;}
 
 
 /* ══════════════════════════════════
+/* ══════════════════════════════════
+   RENDER MOB BLOGS
+══════════════════════════════════ */
+function renderMobBlogs(){
+  var q=(document.getElementById('mob-blogs-srch').value||'').toLowerCase();
+  var el=document.getElementById('mob-blogs-list');
+  if(!el)return;
+  var list=DB.contents.filter(function(b){
+    if(b.type!=='blog')return false;
+    if(!isDir()&&b.statut!=='En ligne')return false;
+    if(q&&!b.title.toLowerCase().includes(q)&&!(b.resume||'').toLowerCase().includes(q))return false;
+    return true;
+  });
+  if(!list.length){el.innerHTML='<div class="no-blogs">Aucun blog publié pour le moment.</div>';return;}
+  el.innerHTML=list.map(function(b){
+    var cnt=(b.blogArticles||[]).filter(function(a){return isDir()||a.statut==='En ligne';}).length;
+    var cov=b.coverSrc?'<img style="width:100%;height:120px;object-fit:cover;border-radius:10px;margin-bottom:10px" src="'+b.coverSrc+'" alt="">':'';
+    return '<div style="background:#fff;border-radius:12px;padding:16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.06);cursor:pointer" onclick="openBlogReader(\''+b.id+'\')">'
+      +cov
+      +'<div style="font-size:11px;color:var(--blue2);font-weight:600;margin-bottom:4px">✍️ Blog</div>'
+      +'<div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px">'+esc(b.title)+'</div>'
+      +(b.resume?'<div style="font-size:13px;color:var(--muted);margin-bottom:6px">'+esc(b.resume)+'</div>':'')
+      +'<div style="font-size:11px;color:var(--muted)">'+fmtD(b.modified||b.created)+' · '+cnt+' article'+(cnt>1?'s':'')+'</div>'
+      +'</div>';
+  }).join('');
+}
+
+function renderMobAlertesPub(){
+  var el=document.getElementById('mob-alertes-pub-list');
+  if(!el)return;
+  var list=DB.alerts.filter(function(a){return a.statut==='active';});
+  if(!list.length){el.innerHTML='<div class="no-blogs">Aucune alerte active pour le moment.</div>';return;}
+  el.innerHTML=list.map(function(a){
+    var cfg=ALERT_TYPES[a.type]||ALERT_TYPES.warning;
+    return '<div style="background:'+cfg.bg+';border:1px solid '+cfg.border+';border-radius:12px;padding:16px;margin-bottom:12px;">'
+      +'<div style="display:flex;align-items:flex-start;gap:12px">'
+      +'<span style="font-size:24px">'+cfg.ico+'</span>'
+      +'<div><div style="font-size:14px;font-weight:700;color:'+cfg.color+';margin-bottom:4px">'+esc(a.title)+'</div>'
+      +'<div style="font-size:13px;color:'+cfg.color+';opacity:.85">'+esc(a.msg||'')+'</div>'
+      +(a.author?'<div style="font-size:11px;margin-top:6px;opacity:.7">— '+esc(a.author)+'</div>':'')
+      +'</div></div></div>';
+  }).join('');
+}
+
+/* ══════════════════════════════════
+   BOTTOM NAV COLOR
+══════════════════════════════════ */
+function applyNavColor(color){
+  var nav=document.getElementById('mob-nav');
+  if(nav)nav.style.background=color||'#0a1628';
+}
+function loadNavColor(){
+  if(cu&&cu.navColor)applyNavColor(cu.navColor);
+  else applyNavColor('#0a1628');
+}
+
+/* ══════════════════════════════════
+   INSCRIPTION
+══════════════════════════════════ */
+function genRegUid(){
+  var fn=(document.getElementById('reg-fn').value||'').trim().toLowerCase().replace(/[^a-z]/g,'');
+  var ln=(document.getElementById('reg-ln').value||'').trim().toLowerCase().replace(/[^a-z]/g,'');
+  var uid=fn?fn[0]+'.'+ln:'';
+  document.getElementById('reg-uid-preview').textContent=uid||'—';
+}
+var _regColor='#0a1628';
+function selectRegColor(el){
+  document.querySelectorAll('#reg-color-row .reg-color-swatch').forEach(function(s){s.classList.remove('selected');});
+  el.classList.add('selected');
+  _regColor=el.dataset.color;
+  document.getElementById('reg-color-custom').value=_regColor;
+}
+function selectRegColorCustom(input){
+  document.querySelectorAll('#reg-color-row .reg-color-swatch').forEach(function(s){s.classList.remove('selected');});
+  _regColor=input.value;
+}
+function doRegister(){
+  var fn=document.getElementById('reg-fn').value.trim();
+  var ln=document.getElementById('reg-ln').value.trim();
+  var pw=document.getElementById('reg-pass').value;
+  var msg=document.getElementById('reg-msg');
+  if(!fn||!ln||!pw){msg.innerHTML='<div class="sec-box sec-err">Remplissez tous les champs.</div>';return;}
+  if(pw.length<4){msg.innerHTML='<div class="sec-box sec-err">Mot de passe trop court (4 caractères min).</div>';return;}
+  var uid=(fn[0]+'.'+ln).toLowerCase().replace(/[^a-z.]/g,'');
+  /* Si l'identifiant existe déjà, ajouter un numéro */
+  var base=uid,n=2;
+  while(DB.users.find(function(u){return u.id===uid;})){uid=base+n;n++;}
+  sha256(pw).then(function(h){
+    DB.users.push({id:uid,fn:fn,ln:ln,role:'Utilisateur',passHash:h,passDefault:false,navColor:_regColor});
+    save();
+    /* Connecter automatiquement */
+    cu=DB.users[DB.users.length-1];
+    loginUIUpdate();
+    loadNavColor();
+    showHome();
+    toast('Bienvenue '+fn+' ! Compte créé avec succès.','ok');
+    /* Reset form */
+    document.getElementById('reg-fn').value='';document.getElementById('reg-ln').value='';
+    document.getElementById('reg-pass').value='';document.getElementById('reg-uid-preview').textContent='—';
+  });
+}
+
+/* ══════════════════════════════════
+   PROFIL
+══════════════════════════════════ */
+function renderProfile(){
+  if(!cu)return;
+  document.getElementById('prof-av').textContent=(cu.fn[0]+(cu.ln[0]||'')).toUpperCase();
+  document.getElementById('prof-name').textContent=cu.fn+' '+cu.ln;
+  document.getElementById('prof-id').textContent='@'+cu.id;
+  document.getElementById('prof-role').innerHTML='<span class="bst '+(cu.role==='Direction'?'b-on':'b-draft')+'">'+cu.role+'</span>';
+  /* Sélectionner la couleur actuelle */
+  var c=cu.navColor||'#0a1628';
+  document.getElementById('prof-color-custom').value=c;
+  document.querySelectorAll('#prof-color-row .reg-color-swatch').forEach(function(s){
+    s.classList.toggle('selected',s.dataset.color===c);
+  });
+}
+var _profColor=null;
+function selectProfColor(el){
+  document.querySelectorAll('#prof-color-row .reg-color-swatch').forEach(function(s){s.classList.remove('selected');});
+  el.classList.add('selected');
+  _profColor=el.dataset.color;
+  document.getElementById('prof-color-custom').value=_profColor;
+  applyNavColor(_profColor);
+}
+function selectProfColorCustom(input){
+  document.querySelectorAll('#prof-color-row .reg-color-swatch').forEach(function(s){s.classList.remove('selected');});
+  _profColor=input.value;
+  applyNavColor(_profColor);
+}
+function saveProfColor(){
+  var c=_profColor||document.getElementById('prof-color-custom').value||'#0a1628';
+  cu.navColor=c;
+  var u=DB.users.find(function(x){return x.id===cu.id;});
+  if(u)u.navColor=c;
+  save();applyNavColor(c);
+  toast('Couleur enregistrée !','ok');
+}
+function saveProfilePass(){
+  var oldp=document.getElementById('prof-old-pass').value;
+  var newp=document.getElementById('prof-new-pass').value;
+  var conf=document.getElementById('prof-conf-pass').value;
+  var msg=document.getElementById('prof-pass-msg');
+  if(!oldp||!newp||!conf){msg.innerHTML='<div class="sec-box sec-err">Remplissez tous les champs.</div>';return;}
+  if(newp!==conf){msg.innerHTML='<div class="sec-box sec-err">Les mots de passe ne correspondent pas.</div>';return;}
+  if(newp.length<4){msg.innerHTML='<div class="sec-box sec-err">Mot de passe trop court (4 caractères min).</div>';return;}
+  sha256(oldp).then(function(oldHash){
+    if(cu.passHash!==oldHash){msg.innerHTML='<div class="sec-box sec-err">Mot de passe actuel incorrect.</div>';return;}
+    sha256(newp).then(function(newHash){
+      cu.passHash=newHash;cu.passDefault=false;
+      var u=DB.users.find(function(x){return x.id===cu.id;});
+      if(u){u.passHash=newHash;u.passDefault=false;}
+      save();
+      msg.innerHTML='<div class="sec-box sec-ok">✅ Mot de passe changé !</div>';
+      document.getElementById('prof-old-pass').value='';
+      document.getElementById('prof-new-pass').value='';
+      document.getElementById('prof-conf-pass').value='';
+    });
+  });
+}
+
+/* ══════════════════════════════════
+   PREMIER CHANGEMENT MDP
+══════════════════════════════════ */
+function doChgPass(){
+  var newp=document.getElementById('chg-new').value;
+  var conf=document.getElementById('chg-conf').value;
+  var msg=document.getElementById('chg-msg');
+  if(!newp||!conf){msg.innerHTML='<div class="sec-box sec-err">Remplissez tous les champs.</div>';return;}
+  if(newp!==conf){msg.innerHTML='<div class="sec-box sec-err">Les mots de passe ne correspondent pas.</div>';return;}
+  if(newp.length<4){msg.innerHTML='<div class="sec-box sec-err">4 caractères minimum.</div>';return;}
+  sha256(newp).then(function(h){
+    cu.passHash=h;cu.passDefault=false;
+    var u=DB.users.find(function(x){return x.id===cu.id;});
+    if(u){u.passHash=h;u.passDefault=false;}
+    save();
+    document.getElementById('chgpass-modal').classList.remove('open');
+    toast('Mot de passe mis à jour !','ok');
+  });
+}
+
+/* ══════════════════════════════════
    INIT
 ══════════════════════════════════ */
 updateAlertsBadge();
 boot();
+loadNavColor();
 </script>
 <!-- ═══ BOTTOM NAV MOBILE ═══ -->
-<nav id="mob-nav" style="display:none;position:fixed;bottom:0;left:0;right:0;height:60px;background:#fff;border-top:1px solid #e5e7eb;z-index:1000;align-items:stretch;">
-  <button onclick="showHome()" class="mob-nav-btn" id="mn-home">
+<nav id="mob-nav">
+  <button class="mob-nav-btn active" id="mn-home" onclick="showHome()">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
     <span>Accueil</span>
   </button>
-  <button onclick="goPage('contenus')" class="mob-nav-btn" id="mn-contenus">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-    <span>Contenus</span>
+  <button class="mob-nav-btn" id="mn-blogs" onclick="goPage('blogs')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+    <span>Blogs</span>
   </button>
-  <button onclick="goPage('alertes')" class="mob-nav-btn" id="mn-alertes">
+  <button class="mob-nav-btn" id="mn-alertes" onclick="goPage('alertes-pub')">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
     <span>Alertes</span>
   </button>
-  <button onclick="goPage('settings')" class="mob-nav-btn" id="mn-settings">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
-    <span>Paramètres</span>
+  <button class="mob-nav-btn" id="mn-profile" onclick="goPage('profile')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span id="mn-profile-lbl">Profil</span>
   </button>
 </nav>
-
-<style>
-@media(max-width:900px){
-  #mob-nav{display:flex!important;}
-  .main{padding-bottom:68px;}
-  #blog-reader{padding-bottom:80px!important;}
-  #view-home{padding-bottom:68px;}
-}
-.mob-nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:none;border:none;cursor:pointer;color:#6b7280;font-size:10px;font-family:inherit;padding:6px 4px;transition:color .15s;}
-.mob-nav-btn svg{width:20px;height:20px;}
-.mob-nav-btn:active,.mob-nav-btn.active{color:#1a4a8a;}
-</style>
 </body>
 </html>
