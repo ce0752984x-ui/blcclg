@@ -1695,14 +1695,14 @@ function renderPubSidebar(){
     var cnt=(b.blogArticles||[]).filter(function(a){return isDir()||a.statut==='En ligne';}).length;
     var cov=b.coverSrc?'<img class="blog-entry-cov" src="'+b.coverSrc+'" alt="">':'';
     var dr=b.statut==='Brouillon'?'<span style="font-size:10px;background:#fef9c3;color:#854d0e;padding:2px 6px;border-radius:6px;margin-left:4px">Brouillon</span>':'';
-    return '<div class="blog-entry" style="padding-left:28px" data-blogid="'+b.id+'">'+cov+'<div class="blog-entry-tag">✍️ Blog</div><h4>'+esc(b.title)+dr+'</h4>'+(b.resume?'<div class="blog-entry-res">'+b.resume+'</div>':'')+'<div class="blog-entry-meta">'+fmtD(b.modified||b.created)+' · '+cnt+' article'+(cnt>1?'s':'')+'</div></div>';
+    return '<div class="blog-entry" style="padding-left:28px" data-blogid="'+b.id+'">'+cov+'<div class="blog-entry-tag">✍️ Blog</div><h4>'+esc(b.title)+dr+'</h4>'+(b.resume?'<div class="blog-entry-res">'+b.resume+'</div>':'')+'<div class="blog-entry-meta">'+(b.modified?'✏️ Mis à jour le '+fmtDT(b.modified):fmtD(b.created))+' · '+cnt+' article'+(cnt>1?'s':'')+'</div></div>';
   }
 
   function blogEntryHtmlFlat(b){
     var cnt=(b.blogArticles||[]).filter(function(a){return isDir()||a.statut==='En ligne';}).length;
     var cov=b.coverSrc?'<img class="blog-entry-cov" src="'+b.coverSrc+'" alt="">':'';
     var dr=b.statut==='Brouillon'?'<span style="font-size:10px;background:#fef9c3;color:#854d0e;padding:2px 6px;border-radius:6px;margin-left:4px">Brouillon</span>':'';
-    return '<div class="blog-entry" data-blogid="'+b.id+'">'+cov+'<div class="blog-entry-tag">✍️ Blog</div><h4>'+esc(b.title)+dr+'</h4>'+(b.resume?'<div class="blog-entry-res">'+b.resume+'</div>':'')+'<div class="blog-entry-meta">'+fmtD(b.modified||b.created)+' · '+cnt+' article'+(cnt>1?'s':'')+'</div></div>';
+    return '<div class="blog-entry" data-blogid="'+b.id+'">'+cov+'<div class="blog-entry-tag">✍️ Blog</div><h4>'+esc(b.title)+dr+'</h4>'+(b.resume?'<div class="blog-entry-res">'+b.resume+'</div>':'')+'<div class="blog-entry-meta">'+(b.modified?'✏️ Mis à jour le '+fmtDT(b.modified):fmtD(b.created))+' · '+cnt+' article'+(cnt>1?'s':'')+'</div></div>';
   }
 
   if(DB.rubriques&&DB.rubriques.length){
@@ -2028,7 +2028,7 @@ function saveContent(){
   }
   var data={type:editType,title:title,resume:document.getElementById('p-resume').value,content:document.getElementById('p-content').innerHTML,statut:statut,cat:document.getElementById('p-cat').value,dstart:document.getElementById('p-dstart').value,dend:document.getElementById('p-dend').value,author:document.getElementById('p-author').value,coverSrc:coverSrc,caption:document.getElementById('p-caption').value,tags:document.getElementById('p-tags').value,files:attachFiles.slice(),blogArticles:[],rubrique:document.getElementById('p-rubrique').value||''};
   if(editId){
-    var idx=DB.contents.findIndex(function(x){return x.id===editId;});
+    var idx=DB.contents.findIndex(function(x){return x.id==editId;});
     if(idx>=0){Object.assign(DB.contents[idx],data);DB.contents[idx].modified=now;DB.contents.unshift(DB.contents.splice(idx,1)[0]);}
     toast('Modifié !','ok');
   }else{
@@ -2527,7 +2527,7 @@ function renderMobBlogs(){
       +'<div style="font-size:11px;color:var(--blue2);font-weight:600;margin-bottom:4px">✍️ Blog</div>'
       +'<div style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px">'+esc(b.title)+'</div>'
       +(b.resume?'<div style="font-size:13px;color:var(--muted);margin-bottom:6px">'+esc(b.resume)+'</div>':'')
-      +'<div style="font-size:11px;color:var(--muted)">'+fmtD(b.modified||b.created)+' · '+cnt+' article'+(cnt>1?'s':'')+'</div>'
+      +'<div style="font-size:11px;color:var(--muted)">'+(b.modified?'✏️ Mis à jour le '+fmtDT(b.modified):fmtD(b.created))+' · '+cnt+' article'+(cnt>1?'s':'')+'</div>'
       +'</div>';
   }).join('');
 }
