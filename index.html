@@ -2305,5 +2305,36 @@ function isMobile(){return window.innerWidth<=900;}
 updateAlertsBadge();
 boot();
 </script>
+<!-- ═══ BOTTOM NAV MOBILE ═══ -->
+<nav id="mob-nav" style="display:none;position:fixed;bottom:0;left:0;right:0;height:60px;background:#fff;border-top:1px solid #e5e7eb;z-index:1000;align-items:stretch;">
+  <button onclick="showHome()" class="mob-nav-btn" id="mn-home">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+    <span>Accueil</span>
+  </button>
+  <button onclick="goPage('contenus')" class="mob-nav-btn" id="mn-contenus">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    <span>Contenus</span>
+  </button>
+  <button onclick="goPage('alertes')" class="mob-nav-btn" id="mn-alertes">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+    <span>Alertes</span>
+  </button>
+  <button onclick="goPage('settings')" class="mob-nav-btn" id="mn-settings">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
+    <span>Paramètres</span>
+  </button>
+</nav>
+
+<style>
+@media(max-width:900px){
+  #mob-nav{display:flex!important;}
+  .main{padding-bottom:68px;}
+  #blog-reader{padding-bottom:80px!important;}
+  #view-home{padding-bottom:68px;}
+}
+.mob-nav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:none;border:none;cursor:pointer;color:#6b7280;font-size:10px;font-family:inherit;padding:6px 4px;transition:color .15s;}
+.mob-nav-btn svg{width:20px;height:20px;}
+.mob-nav-btn:active,.mob-nav-btn.active{color:#1a4a8a;}
+</style>
 </body>
 </html>
