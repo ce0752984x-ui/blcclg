@@ -1692,7 +1692,7 @@ function renderPubSidebar(){
     var cnt=(b.blogArticles||[]).filter(function(a){return isDir()||a.statut==='En ligne';}).length;
     var cov=b.coverSrc?'<img class="blog-entry-cov" src="'+b.coverSrc+'" alt="">':'';
     var dr=b.statut==='Brouillon'?'<span style="font-size:10px;background:#fef9c3;color:#854d0e;padding:2px 6px;border-radius:6px;margin-left:4px">Brouillon</span>':'';
-    return '<div class="blog-entry" style="padding-left:28px" onclick="openBlogReader('+b.id+')">'
+    return '<div class="blog-entry" style="padding-left:28px" onclick="openBlogReader(\''+b.id+'\')">'
       +cov+'<div class="blog-entry-tag">\u270d\ufe0f Blog</div>'
       +'<h4>'+esc(b.title)+dr+'</h4>'
       +(b.resume?'<div class="blog-entry-res">'+b.resume+'</div>':'')
@@ -1704,7 +1704,7 @@ function renderPubSidebar(){
     var cnt=(b.blogArticles||[]).filter(function(a){return isDir()||a.statut==='En ligne';}).length;
     var cov=b.coverSrc?'<img class="blog-entry-cov" src="'+b.coverSrc+'" alt="">':'';
     var dr=b.statut==='Brouillon'?'<span style="font-size:10px;background:#fef9c3;color:#854d0e;padding:2px 6px;border-radius:6px;margin-left:4px">Brouillon</span>':'';
-    return '<div class="blog-entry" onclick="openBlogReader('+b.id+')">'
+    return '<div class="blog-entry" onclick="openBlogReader(\''+b.id+'\')">'
       +cov+'<div class="blog-entry-tag">\u270d\ufe0f Blog</div>'
       +'<h4>'+esc(b.title)+dr+'</h4>'
       +(b.resume?'<div class="blog-entry-res">'+b.resume+'</div>':'')
@@ -1784,7 +1784,7 @@ function openBlogReader(blogId){
     +'<h2>'+esc(b.title)+'</h2>'
     +(b.resume?'<p style="font-size:14px;color:rgba(255,255,255,.75);margin-bottom:12px">'+b.resume+'</p>':'')
     +'<div class="brh-meta"><span>Par '+b.author+'</span><span>'+fmtD(b.created)+'</span>'+(b.cat?'<span>'+b.cat+'</span>':'')+'</div>'
-    +(isDir()?'<div class="brh-actions"><button class="brh-btn" onclick="openPanel('+b.id+')">✏️ Modifier ce blog</button><button class="brh-btn" onclick="openBlogArticlePanel()">+ Ajouter un article</button></div>':'')
+    +(isDir()?'<div class="brh-actions"><button class="brh-btn" onclick="openPanel(\''+b.id+'\')">✏️ Modifier ce blog</button><button class="brh-btn" onclick="openBlogArticlePanel()">+ Ajouter un article</button></div>':'')
     +'</div></div>';
   var arts=(b.blogArticles||[]).filter(function(a){return isDir()||a.statut==='En ligne';});
   document.getElementById('brh-arts').innerHTML=arts.length
@@ -1796,7 +1796,7 @@ function openBlogReader(blogId){
 function blogArtCard(a,blogId){
   var cov=a.coverSrc?'<img src="'+a.coverSrc+'" alt="">':'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/></svg>';
   var dr=a.statut==='Brouillon'?'<span style="font-size:10px;background:#fef9c3;color:#854d0e;padding:2px 6px;border-radius:6px;margin-left:4px">Brouillon</span>':'';
-  return '<div class="acard" onclick="openBlogArtModal('+blogId+',\''+a.id+'\')">'
+  return '<div class="acard" onclick="openBlogArtModal(\''+blogId+'\',\''+a.id+'\')">'
     +'<div class="acard-cov">'+cov+(a.coverSrc?'<div class="acard-ovl"></div>':'')+'</div>'
     +'<div class="acard-body"><div class="acard-tag">📄 Article</div><h3>'+esc(a.title)+dr+'</h3>'+(a.resume?'<p>'+a.resume+'</p>':'')+'</div>'
     +'<div class="acard-foot"><span style="font-size:11px;color:var(--muted)">'+fmtD(a.created)+'</span>'
