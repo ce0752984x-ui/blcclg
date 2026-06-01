@@ -1773,7 +1773,8 @@ function renderPubLinks(){
    BLOG READER
 ══════════════════════════════════ */
 function openBlogReader(blogId){
-  var b=DB.contents.find(function(x){return x.id===blogId&&x.type==='blog';});
+  blogId=+blogId||blogId;
+  var b=DB.contents.find(function(x){return x.id==blogId&&x.type==='blog';});
   if(!b)return;
   editBlogId=blogId;
   hideAll();
@@ -1811,7 +1812,8 @@ function blogArtCard(a,blogId){
    MODAL
 ══════════════════════════════════ */
 function openBlogArtModal(blogId,artId){
-  var b=DB.contents.find(function(x){return x.id===blogId;});
+  blogId=+blogId||blogId;
+  var b=DB.contents.find(function(x){return x.id==blogId;});
   var a=b&&(b.blogArticles||[]).find(function(x){return x.id===artId;});
   if(!a)return;
   openModalData(a,'Article de blog',blogId);
