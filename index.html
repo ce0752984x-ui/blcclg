@@ -823,6 +823,106 @@ body{font-family:Inter,sans-serif;background:var(--bg);color:var(--text);min-hei
 
 </div><!-- /layout -->
 
+<!-- ═══ ARTICLE MODAL ═══ -->
+<div class="modal-bg" id="art-modal" onclick="if(event.target===this)this.classList.remove('open')">
+  <div class="modal-box">
+    <div id="modal-cov-wrap"></div>
+    <div class="modal-hd">
+      <div class="modal-hd-top">
+        <div style="flex:1;min-width:0">
+          <div class="md-type-tag" id="md-type">Article</div>
+          <h2 id="md-title"></h2>
+          <div class="modal-meta-row">
+            <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg><span id="md-author"></span></span>
+            <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Créé le <span id="md-created"></span></span>
+            <span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/></svg><span id="md-cat"></span></span>
+          </div>
+        </div>
+        <button class="mcl" onclick="document.getElementById('art-modal').classList.remove('open')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
+    </div>
+    <div class="modal-body" id="md-body"></div>
+    <div id="md-attachments" style="display:none;padding:18px 32px;border-top:1px solid var(--border);margin-top:0;">
+      <div style="font-size:13px;font-weight:600;color:var(--text);margin-bottom:12px;">Pièces jointes</div>
+      <div id="md-attach-list"></div>
+    </div>
+    <div class="modal-foot"><div class="modal-foot-meta" id="md-fmeta"></div><div id="md-facts" style="display:flex;gap:8px"></div></div>
+  </div>
+</div>
+
+<!-- ═══ ALERT PANEL ═══ -->
+<div class="pbg" id="alert-panel-bg" onclick="if(event.target===this)closeAlertPanel()">
+  <div class="pbox" style="max-width:680px">
+    <div class="ph">
+      <h3 id="ap-panel-title">Créer une alerte</h3>
+      <div class="ph-r">
+        <button class="pcl" onclick="closeAlertPanel()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
+    </div>
+    <div class="pbody">
+      <div class="pfs">
+        <label class="pfl">Type d'alerte <span class="req">*</span></label>
+        <div class="alert-type-grid" id="alert-type-grid">
+          <div class="atbtn" style="color:#dc2626" data-type="danger" onclick="selectAlertType('danger',this)"><div class="at-ico">🚨</div><div class="at-lbl" style="color:#dc2626">Urgent</div></div>
+          <div class="atbtn" style="color:#d97706" data-type="warning" onclick="selectAlertType('warning',this)"><div class="at-ico">⚠️</div><div class="at-lbl" style="color:#d97706">Avertissement</div></div>
+          <div class="atbtn" style="color:#2563b0" data-type="info" onclick="selectAlertType('info',this)"><div class="at-ico">ℹ️</div><div class="at-lbl" style="color:#2563b0">Information</div></div>
+          <div class="atbtn" style="color:#16a34a" data-type="success" onclick="selectAlertType('success',this)"><div class="at-ico">✅</div><div class="at-lbl" style="color:#16a34a">Bonne nouvelle</div></div>
+          <div class="atbtn" style="color:#7c3aed" data-type="event" onclick="selectAlertType('event',this)"><div class="at-ico">📅</div><div class="at-lbl" style="color:#7c3aed">Événement</div></div>
+          <div class="atbtn" style="color:#0891b2" data-type="notice" onclick="selectAlertType('notice',this)"><div class="at-ico">📢</div><div class="at-lbl" style="color:#0891b2">Annonce</div></div>
+        </div>
+      </div>
+      <div class="pfs"><label class="pfl">Titre de l'alerte <span class="req">*</span></label><input class="pfi" type="text" id="al-title" placeholder="Ex : Fermeture exceptionnelle le 15 mai" oninput="previewAlert()"></div>
+      <div class="pfs">
+        <label class="pfl">Message détaillé <span class="req">*</span></label>
+        <textarea class="pfta" id="al-msg" placeholder="Rédigez ici le message complet de l'alerte." style="min-height:100px" oninput="previewAlert()"></textarea>
+        <p class="phint" style="display:flex;justify-content:space-between"><span>Soyez précis et concis</span><span id="al-msg-count" style="color:var(--muted)">0 / 500</span></p>
+      </div>
+      <div class="meta2">
+        <div class="pfs"><label class="pfl">Émetteur / Signataire</label><input class="pfi" type="text" id="al-author" placeholder="Ex: Direction de l'établissement"></div>
+        <div class="pfs"><label class="pfl">Priorité d'affichage</label>
+          <select class="pfsel" id="al-priority">
+            <option value="1">🔴 Haute — affiché en premier</option>
+            <option value="2" selected>🟡 Normale</option>
+            <option value="3">🟢 Basse — affiché en dernier</option>
+          </select>
+        </div>
+      </div>
+      <div class="meta2">
+        <div class="pfs"><label class="pfl">Date de début d'affichage</label><input class="pfi" type="datetime-local" id="al-dstart"></div>
+        <div class="pfs"><label class="pfl">Date de fin d'affichage</label><input class="pfi" type="datetime-local" id="al-dend"><p class="phint">Laisser vide = alerte permanente</p></div>
+      </div>
+      <div class="pfs">
+        <label class="pfl">Options d'affichage</label>
+        <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px">
+          <label class="rl"><input type="checkbox" id="al-popup" style="accent-color:var(--blue2);width:15px;height:15px" checked> Afficher en <strong>pop-up</strong> au chargement de la page</label>
+          <label class="rl"><input type="checkbox" id="al-banner" style="accent-color:var(--blue2);width:15px;height:15px" checked> Afficher en <strong>bannière</strong> sur la page d'accueil</label>
+          <label class="rl"><input type="checkbox" id="al-closable" style="accent-color:var(--blue2);width:15px;height:15px" checked> Permettre aux visiteurs de <strong>fermer</strong> l'alerte</label>
+        </div>
+      </div>
+      <div class="pfs"><label class="pfl">Statut</label>
+        <div class="rgroup">
+          <label class="rl"><input type="radio" name="al-statut" value="active" checked> 🟢 Active — visible immédiatement</label>
+          <label class="rl"><input type="radio" name="al-statut" value="draft"> 🟡 Brouillon — non visible</label>
+        </div>
+      </div>
+      <div class="pfs">
+        <label class="pfl">Aperçu de l'alerte</label>
+        <div id="al-preview" style="border:1px dashed var(--border);border-radius:12px;padding:16px 18px;background:#fafbfc;min-height:60px;display:flex;align-items:center;gap:12px">
+          <span style="font-size:20px" id="alp-ico">⚠️</span>
+          <div>
+            <div style="font-size:13px;font-weight:700;margin-bottom:3px" id="alp-title">Titre de l'alerte</div>
+            <div style="font-size:12px;color:var(--muted);line-height:1.5" id="alp-msg">Message de l'alerte…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="pfoot">
+      <button class="bsec" onclick="closeAlertPanel()">Annuler</button>
+      <button class="bprim" onclick="saveAlert()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>Publier l'alerte</button>
+    </div>
+  </div>
+</div>
+
 <!-- MAIN CONTENT PANEL -->
 <div class="pbg" id="pbg" onclick="if(event.target===this)closePanel()">
   <div class="pbox">
