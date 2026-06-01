@@ -1611,7 +1611,7 @@ function showHome(){
 }
 
 function goPage(name){
-  var adminPages=['contenus','rubriques','alertes','users','etab','settings'];
+  var adminPages=['contenus','rubriques','users','etab','settings'];
   if(adminPages.includes(name)&&!isDir()){toast('Accès réservé à la Direction.','err');return;}
   /* Pages publiques spéciales */
   if(name==='register'){hideAll();document.getElementById('page-register').classList.add('active');return;}
@@ -1642,7 +1642,7 @@ function goPage(name){
   var sl=document.getElementById('sl-'+name);if(sl)sl.classList.add('active');
   if(name==='contenus')renderAdmin();
   if(name==='rubriques')renderRubriques();
-  if(name==='alertes')renderAlerts();
+  if(name==='alertes'){if(isDir())renderAlerts();else renderMobAlertesPub();}
   if(name==='users')renderUsers();
   if(name==='etab')renderEtabForm();
   if(name==='settings')renderSettings();
